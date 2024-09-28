@@ -1,0 +1,7 @@
+Commands:
+
+Create cert
+openssl req -nodes -new -x509 -keyout server.key -out server.cert
+
+Run https server
+http-server -S -C server.cert -K server.key -p 3000

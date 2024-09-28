@@ -1,96 +1,105 @@
 import * as THREE from 'three';
 import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader.js';
-import { OrbitControls } from './node_modules/three/examples/jsm/controls/OrbitControls.js';
+import { VRButton } from './node_modules/three/examples/jsm/webxr/VRButton.js';
 
+// Create scene, camera, and renderer
 const scene = new THREE.Scene();
-console.log(screen.width /screen.height);
-const camera = new THREE.PerspectiveCamera(75, screen.width /screen.height, 0.1, 2000);
-const renderer = new THREE.WebGLRenderer();
-const controls = new OrbitControls(camera, renderer.domElement);
-
-controls.enableDamping = true;
-controls.dampingFactor =  0.25;
-controls.enableZoom = true;
-
-renderer.setSize(screen.width, screen.height);
-
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
 document.body.appendChild(renderer.domElement);
 
-const textureLoader = new THREE.TextureLoader();
-textureLoader.load('./assets/background.jpg', function(texture) {
-    scene.background = texture;  // Set the background texture
+// Enable VR
+renderer.xr.enabled = true;
+
+renderer.xr.addEventListener('sessionstart', () => {
+    // Move the camera back when VR starts to avoid being inside the object
+    camera.position.set(20,0,100);  // Set a higher Z value to avoid inside view
 });
 
+renderer.xr.addEventListener('sessionend', () => {
+    // Reset the camera position after exiting VR
+    camera.position.set(20,0,100);  // Reset or adjust based on normal view
+});
 
+document.body.appendChild(VRButton.createButton(renderer));
 
+// Load the model
 const loader = new GLTFLoader();
-loader.load('./assets/edited exo.glb', function (gltf){
+loader.load('/assets/edited exo.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "planet";
     model.position.set(0, 0, 0);  // Position in the center
     model.scale.set(0.1, 0.1, 0.1);     // Adjust scale if necessary
-    model.traverse((child) => {
-        console.log(child);
-        if (child.name === 'Testing_Click')
-        {
-            child.userData.clickable = true;
-        }
-    })
-    scene.add(model);
-    console.log(model);
+    scene.add(gltf.scene);  
     renderer.render(scene, camera);   //  <-  add this line
+
+    // Traverse through the model to find clickable parts
+    gltf.scene.traverse((child) => {
+        if (child.isMesh) {
+            if (child.name === 'ClickablePart1') {
+                child.userData.clickable = true;  // Mark this mesh as clickable
+            }
+            if (child.name === 'ClickablePart2') {
+                child.userData.clickable = true;  // Mark this mesh as clickable
+            }
+        }
+    });
 });
+
+
 
 camera.position.set(20,0,100);
 camera.lookAt(0,0,0);
 
-function animate(){
-    requestAnimationFrame(animate);
-    controls.update();
-    renderer.render(scene, camera);
-}
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);  // Ambient light
+// Add lights
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
 scene.add(ambientLight);
-
-var light = new THREE.PointLight( 0xff0001, 1, 100 );
-light.position.set( 50, 50, 50 );
-var light2 = new THREE.PointLight( 0xff0001, 1, 100 );
-light.position.set( 0, 0, 0 );
-scene.add( light);
-scene.add( light2);
-
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);  // Directional light
-directionalLight.position.set(1, 1, 1).normalize();  // Set the direction
+const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+directionalLight.position.set(5, 10, 7.5);
 scene.add(directionalLight);
 
-scene.background = new THREE.Color( 0x999999 );
-
-
+// VR Controllers
+const controller1 = renderer.xr.getController(0);
+const controller2 = renderer.xr.getController(1);
+scene.add(controller1);
+scene.add(controller2);
+    
+// Raycaster for detecting clicks with controllers
 const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
+const tempMatrix = new THREE.Matrix4();
 
+// Handle controller interactions
+/* function handleController(controller) {
+    const userData = controller.userData;
 
-window.addEventListener('click', (event) => {
-    // Calculate mouse position in normalized device coordinates (-1 to +1)
-    mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = - (event.clientY / window.innerHeight) * 2 + 1;
+    // Check for intersecting objects
+    const intersections = controller.intersectObject(scene, true);
+    if (intersections.length > 0) {
+        const clickedObject = intersections[0].object;
 
-    // Update the raycaster with the camera and mouse position
-    raycaster.setFromCamera(mouse, camera);
-
-    // Calculate objects intersecting the picking ray
-    const intersects = raycaster.intersectObjects(scene.children);
-
-    if (intersects.length > 0) {
-        const clickedObject = intersects[0].object;
-        // Perform an action on the clicked object
-        console.log(clickedObject.name);
+        // Check if the clicked object is clickable
         if (clickedObject.userData.clickable) {
-            // Example action: Change color on click
-            console.log("you clicked on me");  // Change color randomly
+            console.log(`You clicked on ${clickedObject.name}!`);
+            clickedObject.material.color.set(0xff0000); // Change color to red as an example
         }
     }
-});
+}
+ */
+// Animation loop
+function animate() {
+    renderer.setAnimationLoop(() => {
+/*         handleController(controller1);
+        handleController(controller2); */
+        renderer.render(scene, camera);
+    });
+}
 
 animate();
 
+// Handle window resizing
+window.addEventListener('resize', () => {
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+});
