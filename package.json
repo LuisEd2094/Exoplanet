@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@depasquale/three-immersive-controls": "^0.0.17",
     "three": "^0.169.0"
   }
 }

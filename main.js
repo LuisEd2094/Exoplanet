@@ -1,36 +1,42 @@
 import * as THREE from 'three';
-import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader.js';
 import { VRButton } from './node_modules/three/examples/jsm/webxr/VRButton.js';
+import { XRControllerModelFactory } from './node_modules/three/examples/jsm/webxr/XRControllerModelFactory.js';
+import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader.js';
 
-// Create scene, camera, and renderer
+
 const scene = new THREE.Scene();
-const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 2000);
-const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+
+function addCamera() {
+    const camera = new THREE.PerspectiveCamera(
+        90,
+        window.innerWidth / window.innerHeight,
+        0.01,
+        1000
+    )
+    camera.position.set(0, 1.6, 0)
+    camera.lookAt(0, 0, 0)
+    return camera
+}
+let camera = addCamera()
+const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
-document.body.appendChild(renderer.domElement);
-
-// Enable VR
 renderer.xr.enabled = true;
+document.body.appendChild(renderer.domElement);
+document.body.appendChild(VRButton.createButton(renderer)); // Add VR Button to enter VR mode
 
-renderer.xr.addEventListener('sessionstart', () => {
-    // Move the camera back when VR starts to avoid being inside the object
-    camera.position.set(20,0,100);  // Set a higher Z value to avoid inside view
-});
+const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+scene.add(ambientLight);
+const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+directionalLight.position.set(0, 1, 1).normalize();
+scene.add(directionalLight);
 
-renderer.xr.addEventListener('sessionend', () => {
-    // Reset the camera position after exiting VR
-    camera.position.set(20,0,100);  // Reset or adjust based on normal view
-});
 
-document.body.appendChild(VRButton.createButton(renderer));
-
-// Load the model
 const loader = new GLTFLoader();
 loader.load('/assets/edited exo.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "planet";
-    model.position.set(0, 0, 0);  // Position in the center
-    model.scale.set(0.1, 0.1, 0.1);     // Adjust scale if necessary
+    model.position.set(0, 0, -1000);  // Position in the center
+    model.scale.set(1, 1, 1);     // Adjust scale if necessary
     scene.add(gltf.scene);  
     renderer.render(scene, camera);   //  <-  add this line
 
@@ -48,58 +54,37 @@ loader.load('/assets/edited exo.glb', function(gltf) {
 });
 
 
-
-camera.position.set(20,0,100);
-camera.lookAt(0,0,0);
-
-// Add lights
-const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
-scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 1);
-directionalLight.position.set(5, 10, 7.5);
-scene.add(directionalLight);
-
-// VR Controllers
 const controller1 = renderer.xr.getController(0);
 const controller2 = renderer.xr.getController(1);
+
 scene.add(controller1);
 scene.add(controller2);
-    
-// Raycaster for detecting clicks with controllers
-const raycaster = new THREE.Raycaster();
-const tempMatrix = new THREE.Matrix4();
 
-// Handle controller interactions
-/* function handleController(controller) {
-    const userData = controller.userData;
+// Load controller models
+const controllerModelFactory = new XRControllerModelFactory();
+const controller1Model = controllerModelFactory.createControllerModel(controller1);
+const controller2Model = controllerModelFactory.createControllerModel(controller2);
 
-    // Check for intersecting objects
-    const intersections = controller.intersectObject(scene, true);
-    if (intersections.length > 0) {
-        const clickedObject = intersections[0].object;
+controller1.add(controller1Model);
+controller2.add(controller2Model);
 
-        // Check if the clicked object is clickable
-        if (clickedObject.userData.clickable) {
-            console.log(`You clicked on ${clickedObject.name}!`);
-            clickedObject.material.color.set(0xff0000); // Change color to red as an example
-        }
-    }
-}
- */
-// Animation loop
-function animate() {
-    renderer.setAnimationLoop(() => {
-/*         handleController(controller1);
-        handleController(controller2); */
-        renderer.render(scene, camera);
-    });
-}
 
-animate();
+// Create controllers
 
-// Handle window resizing
+// Set up interaction with the controllers
+
+
+// Handle window resize
 window.addEventListener('resize', () => {
-    renderer.setSize(window.innerWidth, window.innerHeight);
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// Animate the cube and render the scene
+function render() {
+    renderer.render(scene, camera);
+}
+
+
+renderer.setAnimationLoop(render);
