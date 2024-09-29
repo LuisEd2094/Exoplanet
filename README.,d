@@ -5,3 +5,8 @@ openssl req -nodes -new -x509 -keyout server.key -out server.cert
 
 Run https server
 http-server -S -C server.cert -K server.key -p 3000
+
+
+Cockpit URL:
+
+https://www.cgtrader.com/free-3d-models/vehicle/sci-fi-vehicle/spaceship-cockpit-for-vr

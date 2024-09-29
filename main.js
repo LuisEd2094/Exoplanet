@@ -36,12 +36,12 @@ directionalLight.position.set(0, 1, 1).normalize();
 scene.add(directionalLight);
 
 
-/* const loader = new GLTFLoader();
-loader.load('/assets/edited exo.glb', function(gltf) {
+ const loader = new GLTFLoader();
+/*loader.load('/assets/lowerspaceplanet.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "planet";
     model.position.set(0, 0, -1000);  // Position in the center
-    model.scale.set(1, 1, 1);     // Adjust scale if necessary
+    model.scale.set(1, 1, 1);     // Adjust scale if necessary  
     model.layers.set(objectLayer);
     scene.add(gltf.scene);  
     renderer.render(scene, camera);   //  <-  add this line
@@ -58,6 +58,33 @@ loader.load('/assets/edited exo.glb', function(gltf) {
         }
     });
 }); */
+let box;
+
+loader.load('/assets/planetcube.glb', function(gltf) {
+    const model = gltf.scene;   
+    model.name = "cockpit";
+    model.position.set(0, 0, 0);  // Position in the center
+    model.scale.set(1, 1, 1);     // Adjust scale if necessary  
+    model.layers.set(objectLayer);
+    scene.add(gltf.scene);  
+    renderer.render(scene, camera);   //  <-  add this line
+
+    // Traverse through the model to find clickable parts
+    gltf.scene.traverse((child) => {
+        console.log(child.name)
+        if (child.name === 'box')
+            box = child;        
+        if (child.isMesh) {
+            if (child.name === 'ClickablePart1') {
+                child.userData.clickable = true;  // Mark this mesh as clickable
+            }
+            if (child.name === 'ClickablePart2') {
+                child.userData.clickable = true;  // Mark this mesh as clickable
+            }
+        }
+    });
+});
+
 scene.background = new THREE.Color(0xffffff);  // Full white background
 
 
@@ -93,14 +120,14 @@ window.addEventListener('resize', () => {
 
 // Create the line using the geometry and material
 
-const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+/* const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
 const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
 const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
 cube.position.set(0, 1.6, -1); // Position it directly in front of the camera
 cube.name = "red";
 scene.add(cube); 
 cube.layers.set(objectLayer);
-
+ */
 
 
 
@@ -153,6 +180,7 @@ function render() {
     line1 = handleControllerLine(controller1, line1);
     line2 = handleControllerLine(controller2, line2);
     renderer.render(scene, camera);
+
 }
 
 
@@ -163,6 +191,12 @@ function onSelectStart(event) {
 
     if (intersects.length > 0) {
         const intersectedObject = intersects[0].object; // Get the intersected object
+        if (intersectedObject.name === "Cockpit")
+        {
+            box.visible = !box.visible;
+            console.log("Toggled box visibility:", box.visible);
+
+        }
         console.log("Intersected with", intersectedObject.name); // Log the name of the intersected object
         if (intersectedObject.material.color.getHex() === 0x00ff00)
             intersectedObject.material.color.set(0xFFFFFF); // Change color on click
