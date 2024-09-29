@@ -5,6 +5,11 @@ import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader
 
 
 const scene = new THREE.Scene();
+const lineLayer = 1;  // Layer 1 for line
+const objectLayer = 0;  // Default layer for all objects
+let line1, line2;  // Declare a global variable for the line so we can update it
+const raycaster = new THREE.Raycaster();
+
 
 function addCamera() {
     const camera = new THREE.PerspectiveCamera(
@@ -31,12 +36,13 @@ directionalLight.position.set(0, 1, 1).normalize();
 scene.add(directionalLight);
 
 
-const loader = new GLTFLoader();
+/* const loader = new GLTFLoader();
 loader.load('/assets/edited exo.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "planet";
     model.position.set(0, 0, -1000);  // Position in the center
     model.scale.set(1, 1, 1);     // Adjust scale if necessary
+    model.layers.set(objectLayer);
     scene.add(gltf.scene);  
     renderer.render(scene, camera);   //  <-  add this line
 
@@ -51,7 +57,8 @@ loader.load('/assets/edited exo.glb', function(gltf) {
             }
         }
     });
-});
+}); */
+scene.background = new THREE.Color(0xffffff);  // Full white background
 
 
 const controller1 = renderer.xr.getController(0);
@@ -68,10 +75,10 @@ const controller2Model = controllerModelFactory.createControllerModel(controller
 controller1.add(controller1Model);
 controller2.add(controller2Model);
 
+controller1.addEventListener('selectstart', onSelectStart);
+controller2.addEventListener('selectstart', onSelectStart);
 
-// Create controllers
 
-// Set up interaction with the controllers
 
 
 // Handle window resize
@@ -81,9 +88,89 @@ window.addEventListener('resize', () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
-// Animate the cube and render the scene
+// Raycaster and line setup
+
+
+// Create the line using the geometry and material
+
+const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
+cube.position.set(0, 1.6, -1); // Position it directly in front of the camera
+cube.name = "red";
+scene.add(cube); 
+cube.layers.set(objectLayer);
+
+
+
+
+
+
+raycaster.layers.set(objectLayer);
+
+
+function handleControllerLine(controller,  line)
+{
+    const rayOrigin = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
+    const direction = new THREE.Vector3(0, 0, -1); // -Z axis is forward in three.js
+    direction.applyQuaternion(controller.quaternion); // Apply controller's rotation
+    const offset = 0.1; // Adjust this value as needed
+    const rayOffset = rayOrigin.clone().add(direction.clone().multiplyScalar(offset));
+    raycaster.ray.origin.copy(rayOffset); // Use the offset position as the origin
+    raycaster.ray.direction.copy(direction); // Use the controller's direction
+
+   const material = new THREE.LineBasicMaterial({
+        color: 0x0000ff
+    });
+    
+    const points1 = [];
+    const intersects = raycaster.intersectObjects(scene.children, true);
+    if (line) {
+        scene.remove(line);
+    }     
+    if (intersects.length > 0) 
+    {
+   
+        const controllerPosition = new THREE.Vector3();
+        const intersection = intersects[0];
+
+
+        controller.getWorldPosition(controllerPosition);
+        points1.push(controllerPosition);
+        points1.push(intersection.point);
+
+        const geometry = new THREE.BufferGeometry().setFromPoints( points1 );
+        line = new THREE.Line(geometry, material);
+        line.layers.set(lineLayer); 
+
+
+        scene.add( line );
+    }
+    return line;
+}
+
 function render() {
+    line1 = handleControllerLine(controller1, line1);
+    line2 = handleControllerLine(controller2, line2);
     renderer.render(scene, camera);
+}
+
+
+// Event handlers for controller interaction
+function onSelectStart(event) {
+    const controller = event.target;
+    const intersects = raycaster.intersectObjects(scene.children, true);
+
+    if (intersects.length > 0) {
+        const intersectedObject = intersects[0].object; // Get the intersected object
+        console.log("Intersected with", intersectedObject.name); // Log the name of the intersected object
+        if (intersectedObject.material.color.getHex() === 0x00ff00)
+            intersectedObject.material.color.set(0xFFFFFF); // Change color on click
+        else
+        {
+            intersectedObject.material.color.set(0x00ff00); // Change color on click
+        }
+    }
 }
 
 
