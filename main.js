@@ -59,7 +59,8 @@ scene.add(directionalLight);
 }); */
 let panels;
 let leftpanel;
-loader.load('/assets/kepplersun.glb', function(gltf) {
+let planet;
+loader.load('/assets/kepplersun1.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
@@ -87,6 +88,11 @@ loader.load('/assets/kepplersun.glb', function(gltf) {
             {
                 child.visible = false;
                 leftpanel = child;
+            }
+            else if (child.name === 'Planet')
+            {
+                child.visible = false;
+                planet = child; 
             }
         }
     });
@@ -216,6 +222,10 @@ function onSelectStart(event) {
             panels.children.forEach(panel => {
                 panel.visible = !panel.visible;
             })
+        }
+        else if (intersectedObject.name === "Rectangle_Top")
+        {
+            planet.visible = true;
         }
          if (intersectedObject.material.color.getHex() === 0x00ff00)
             intersectedObject.material.color.set(0xFFFFFF); // Change color on click
