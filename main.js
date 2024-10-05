@@ -35,13 +35,36 @@ directionalLight.position.set(0, 1, 1).normalize();
 scene.add(directionalLight);
  */
 
+
+
 const loader = new GLTFLoader();
-let panels;
 let leftpanel;
 let planet;
 let sun;
 let telescope;
-loader.load('/assets/kepplerbigtest.glb', function(gltf) {
+let panels;
+
+
+function changeVisibility()
+{
+    panels.visible = !panels.visible;
+    if (panels.visible)
+        panels.layers.set(objectLayer);
+    else
+        panels.layers.set(notCollide);
+    panels.children.forEach(panel => {
+        panel.visible = !panel.visible;
+        if (panel.visible)
+            panel.layers.set(objectLayer);
+        else
+        panel.layers.set(notCollide);
+
+    })
+
+    return panels;
+}
+
+loader.load('/assets/kepplerbig.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
@@ -57,6 +80,7 @@ loader.load('/assets/kepplerbigtest.glb', function(gltf) {
             {
                 child.visible = false;
                 panels = child;  // Mark this mesh as clickable
+
                 panels.layers.set(notCollide);
 
                 // The `groups` array contains information about the face ranges for each material group
@@ -249,22 +273,7 @@ function onSelectStart(event) {
             else
                 leftpanel.layers.set(notCollide);
 
-
-            panels.visible = !panels.visible;
-            if (panels.visible)
-                panels.layers.set(objectLayer);
-            else
-                panels.layers.set(notCollide);
-            console.log(panels.children);
-
-            panels.children.forEach(panel => {
-                panel.visible = !panel.visible;
-                if (panel.visible)
-                    panel.layers.set(objectLayer);
-                else
-                panel.layers.set(notCollide);
-
-            })
+            changeVisibility();
             console.log(intersectedObject.material.color.getHex());
             if (intersectedObject.material.color.getHex() === 0xFFFFFF)
                 intersectedObject.material.color.set(0xE7E7E7); // Change color on click
@@ -277,6 +286,7 @@ function onSelectStart(event) {
         {
           planet.visible = true;
           sounds.good.play();
+          changeVisibility();
         }
         else if(intersectedObject.name === "leftpanel")
         {
