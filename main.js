@@ -28,40 +28,19 @@ renderer.xr.enabled = true;
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(VRButton.createButton(renderer)); // Add VR Button to enter VR mode
 
-const ambientLight = new THREE.AmbientLight(0x404040); // Soft white light
+const ambientLight = new THREE.AmbientLight(0xFFF2F0, 0.5);
 scene.add(ambientLight);
-const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+/* const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
 directionalLight.position.set(0, 1, 1).normalize();
 scene.add(directionalLight);
-
+ */
 
  const loader = new GLTFLoader();
-/*loader.load('/assets/lowerspaceplanet.glb', function(gltf) {
-    const model = gltf.scene;   
-    model.name = "planet";
-    model.position.set(0, 0, -1000);  // Position in the center
-    model.scale.set(1, 1, 1);     // Adjust scale if necessary  
-    model.layers.set(objectLayer);
-    scene.add(gltf.scene);  
-    renderer.render(scene, camera);   //  <-  add this line
-
-    // Traverse through the model to find clickable parts
-    gltf.scene.traverse((child) => {
-        if (child.isMesh) {
-            if (child.name === 'ClickablePart1') {
-                child.userData.clickable = true;  // Mark this mesh as clickable
-            }
-            if (child.name === 'ClickablePart2') {
-                child.userData.clickable = true;  // Mark this mesh as clickable
-            }
-        }
-    });
-}); */
 let panels;
 let leftpanel;
 let planet;
 let sun;
-loader.load('/assets/kepplersun1.glb', function(gltf) {
+loader.load('/assets/kepplersun.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
