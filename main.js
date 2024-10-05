@@ -8,7 +8,6 @@ const scene = new THREE.Scene();
 const lineLayer = 1;  // Layer 1 for line
 const objectLayer = 0;  // Default layer for all objects
 let line1, line2;  // Declare a global variable for the line so we can update it
-const raycaster = new THREE.Raycaster();
 
 
 function addCamera() {
@@ -59,8 +58,8 @@ scene.add(directionalLight);
     });
 }); */
 let panels;
-
-loader.load('/assets/kepplerplanet.glb', function(gltf) {
+let leftpanel;
+loader.load('/assets/kepplersun.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
@@ -73,6 +72,7 @@ loader.load('/assets/kepplerplanet.glb', function(gltf) {
     gltf.scene.traverse((child) => {
         console.log(child.name)     
         if (child.isMesh) {
+
             if (child.name === 'Rectangle_Bot') 
             {
                 child.visible = false;
@@ -83,8 +83,10 @@ loader.load('/assets/kepplerplanet.glb', function(gltf) {
                     panel.visible = false;              // Number of faces in the group
                 });
             }
-            if (child.name === 'ClickablePart2') {
-                child.userData.clickable = true;  // Mark this mesh as clickable
+            else if (child.name === 'Left_Panel')
+            {
+                child.visible = false;
+                leftpanel = child;
             }
         }
     });
@@ -136,21 +138,27 @@ cube.layers.set(objectLayer);
 
 
 
+//const raycaster = new THREE.Raycaster();
 
 
-raycaster.layers.set(objectLayer);
+controller1.raycaster = new THREE.Raycaster();
+controller1.raycaster.layers.set(objectLayer);
+
+controller2.raycaster = new THREE.Raycaster();
+controller2.raycaster.layers.set(objectLayer);
+
 
 
 function handleControllerLine(controller,  line)
 {
     const rayOrigin = new THREE.Vector3().setFromMatrixPosition(controller.matrixWorld);
     const direction = new THREE.Vector3(0, 0, -1); // -Z axis is forward in three.js
+    const raycaster = controller.raycaster;
     direction.applyQuaternion(controller.quaternion); // Apply controller's rotation
     const offset = 0.1; // Adjust this value as needed
     const rayOffset = rayOrigin.clone().add(direction.clone().multiplyScalar(offset));
     raycaster.ray.origin.copy(rayOffset); // Use the offset position as the origin
     raycaster.ray.direction.copy(direction); // Use the controller's direction
-
    const material = new THREE.LineBasicMaterial({
         color: 0x0000ff
     });
@@ -191,22 +199,25 @@ function render() {
 
 // Event handlers for controller interaction
 function onSelectStart(event) {
-    console.log(event);
     const controller = event.target;
-    console.log(controller);
+    const raycaster = controller.raycaster;
     const intersects = raycaster.intersectObjects(scene.children, true);
+    console.log(event);
+    console.log(controller);
+    console.log(intersects);
 
     if (intersects.length > 0) {
         const intersectedObject = intersects[0].object; // Get the intersected object
+        console.log(intersectedObject.name);
         if (intersectedObject.name === "Kepler_-_K2")
         {
+            leftpanel.visible = !leftpanel.visible;
             panels.visible = !panels.visible;
             panels.children.forEach(panel => {
                 panel.visible = !panel.visible;
             })
         }
-        console.log("Intersected with", intersectedObject.name); // Log the name of the intersected object
-        if (intersectedObject.material.color.getHex() === 0x00ff00)
+         if (intersectedObject.material.color.getHex() === 0x00ff00)
             intersectedObject.material.color.set(0xFFFFFF); // Change color on click
         else
         {
