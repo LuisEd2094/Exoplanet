@@ -40,7 +40,8 @@ let panels;
 let leftpanel;
 let planet;
 let sun;
-loader.load('/assets/kepplerbig.glb', function(gltf) {
+let telescope;
+loader.load('/assets/kepplerbigtest.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
@@ -70,6 +71,10 @@ loader.load('/assets/kepplerbig.glb', function(gltf) {
                 leftpanel = child;
                 leftpanel.layers.set(notCollide);
             }
+            else if (child.name === 'telescope')
+                {
+                    telescope = child;
+                }
             else if (child.name === 'Planet')
             {
                 child.visible = false;
@@ -218,6 +223,7 @@ function render() {
     sun.rotation.y += 0.00005;
     sun.rotation.x += 0.00002;
     sun.rotation.z -= 0.00001;
+    telescope.rotation.y += 0.0002;
 
     planet.rotation.y += 0.0008;
     //planet.rotation.x += 0.00077;
@@ -234,7 +240,7 @@ function onSelectStart(event) {
     if (intersects.length > 0) {
         const intersectedObject = intersects[0].object; // Get the intersected object
         console.log(intersectedObject);
-        if (intersectedObject.name === "Kepler_-_K2")
+        if (intersectedObject.name === "telescope")
         {
             sounds.kepler.play();
             leftpanel.visible = !leftpanel.visible;
