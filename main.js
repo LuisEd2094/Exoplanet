@@ -15,7 +15,7 @@ function addCamera() {
         90,
         window.innerWidth / window.innerHeight,
         0.01,
-        1000
+        5000
     )
     camera.position.set(0, 1.6, 0)
     camera.lookAt(0, 0, 0)
@@ -60,7 +60,7 @@ scene.add(directionalLight);
 let panels;
 let leftpanel;
 let planet;
-loader.load('/assets/kepplersun1.glb', function(gltf) {
+loader.load('/assets/kepplersun.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
