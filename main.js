@@ -5,7 +5,7 @@ import { GLTFLoader } from './node_modules/three/examples/jsm/loaders/GLTFLoader
 
 
 const scene = new THREE.Scene();
-const lineLayer = 1;  // Layer 1 for line
+const notCollide = 1;  // Layer 1 for line
 const objectLayer = 0;  // Default layer for all objects
 let line1, line2;  // Declare a global variable for the line so we can update it
 
@@ -15,7 +15,7 @@ function addCamera() {
         90,
         window.innerWidth / window.innerHeight,
         0.01,
-        5000
+        1000
     )
     camera.position.set(0, 1.6, 0)
     camera.lookAt(0, 0, 0)
@@ -56,16 +56,19 @@ loader.load('/assets/kepplersun1.glb', function(gltf) {
             {
                 child.visible = false;
                 panels = child;  // Mark this mesh as clickable
+                panels.layers.set(notCollide);
 
                 // The `groups` array contains information about the face ranges for each material group
                 panels.children.forEach(panel => {
-                    panel.visible = false;              // Number of faces in the group
+                    panel.visible = false;
+                    panel.layers.set(notCollide);
                 });
             }
             else if (child.name === 'leftpanel')
             {
                 child.visible = false;
                 leftpanel = child;
+                leftpanel.layers.set(notCollide);
             }
             else if (child.name === 'Planet')
             {
@@ -151,8 +154,7 @@ function handleControllerLine(controller,  line)
 
         const geometry = new THREE.BufferGeometry().setFromPoints( points1 );
         line = new THREE.Line(geometry, material);
-        line.layers.set(lineLayer); 
-
+        line.layers.set(notCollide); 
 
         scene.add( line );
     }
@@ -229,10 +231,6 @@ function onSelectStart(event) {
     const controller = event.target;
     const raycaster = controller.raycaster;
     const intersects = raycaster.intersectObjects(scene.children, true);
-    console.log(event);
-    console.log(controller);
-    console.log(intersects);
-
     if (intersects.length > 0) {
         const intersectedObject = intersects[0].object; // Get the intersected object
         console.log(intersectedObject);
@@ -240,12 +238,30 @@ function onSelectStart(event) {
         {
             sounds.kepler.play();
             leftpanel.visible = !leftpanel.visible;
+            if (leftpanel.visible)
+                leftpanel.layers.set(objectLayer);
+            else
+                leftpanel.layers.set(notCollide);
+
+
             panels.visible = !panels.visible;
+            if (panels.visible)
+                panels.layers.set(objectLayer);
+            else
+                panels.layers.set(notCollide);
+            console.log(panels.children);
+
             panels.children.forEach(panel => {
                 panel.visible = !panel.visible;
+                if (panel.visible)
+                    panel.layers.set(objectLayer);
+                else
+                panel.layers.set(notCollide);
+
             })
+            console.log(intersectedObject.material.color.getHex());
             if (intersectedObject.material.color.getHex() === 0xFFFFFF)
-                intersectedObject.material.color.set(0x315712); // Change color on click
+                intersectedObject.material.color.set(0xE7E7E7); // Change color on click
             else
             {
                 intersectedObject.material.color.set(0xFFFFFF); // Change color on click
