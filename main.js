@@ -60,7 +60,8 @@ scene.add(directionalLight);
 let panels;
 let leftpanel;
 let planet;
-loader.load('/assets/kepplersun.glb', function(gltf) {
+let sun;
+loader.load('/assets/kepplersun1.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
@@ -71,10 +72,8 @@ loader.load('/assets/kepplersun.glb', function(gltf) {
 
     // Traverse through the model to find clickable parts
     gltf.scene.traverse((child) => {
-        console.log(child.name)     
         if (child.isMesh) {
-
-            if (child.name === 'Rectangle_Bot') 
+            if (child.name === 'toppanel') 
             {
                 child.visible = false;
                 panels = child;  // Mark this mesh as clickable
@@ -84,7 +83,7 @@ loader.load('/assets/kepplersun.glb', function(gltf) {
                     panel.visible = false;              // Number of faces in the group
                 });
             }
-            else if (child.name === 'Left_Panel')
+            else if (child.name === 'leftpanel')
             {
                 child.visible = false;
                 leftpanel = child;
@@ -93,6 +92,10 @@ loader.load('/assets/kepplersun.glb', function(gltf) {
             {
                 child.visible = false;
                 planet = child; 
+            }
+            else if (child.name === 'Sun')
+            {
+                sun = child;
             }
         }
     });
@@ -127,24 +130,6 @@ window.addEventListener('resize', () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
-
-// Raycaster and line setup
-
-
-// Create the line using the geometry and material
-
-/* const cubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-const cubeMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-const cube = new THREE.Mesh(cubeGeometry, cubeMaterial);
-cube.position.set(0, 1.6, -1); // Position it directly in front of the camera
-cube.name = "red";
-scene.add(cube); 
-cube.layers.set(objectLayer);
- */
-
-
-
-//const raycaster = new THREE.Raycaster();
 
 
 controller1.raycaster = new THREE.Raycaster();
@@ -198,6 +183,12 @@ function handleControllerLine(controller,  line)
 function render() {
     line1 = handleControllerLine(controller1, line1);
     line2 = handleControllerLine(controller2, line2);
+    sun.rotation.y += 0.00005;
+    sun.rotation.x += 0.00002;
+    sun.rotation.z -= 0.00001;
+
+    planet.rotation.y += 0.0008;
+    //planet.rotation.x += 0.00077;
     renderer.render(scene, camera);
 
 }
@@ -214,25 +205,35 @@ function onSelectStart(event) {
 
     if (intersects.length > 0) {
         const intersectedObject = intersects[0].object; // Get the intersected object
-        console.log(intersectedObject.name);
+        console.log(intersectedObject);
         if (intersectedObject.name === "Kepler_-_K2")
-        {
+        {   
             leftpanel.visible = !leftpanel.visible;
             panels.visible = !panels.visible;
             panels.children.forEach(panel => {
                 panel.visible = !panel.visible;
             })
+            if (intersectedObject.material.color.getHex() === 0xFFFFFF)
+                intersectedObject.material.color.set(0x315712); // Change color on click
+            else
+            {
+                intersectedObject.material.color.set(0xFFFFFF); // Change color on click
+            }
         }
-        else if (intersectedObject.name === "Rectangle_Top")
+        else if (intersectedObject.name === "toppanel")
         {
-            planet.visible = true;
+          planet.visible = true;
         }
-         if (intersectedObject.material.color.getHex() === 0x00ff00)
-            intersectedObject.material.color.set(0xFFFFFF); // Change color on click
         else
         {
-            intersectedObject.material.color.set(0x00ff00); // Change color on click
+            if (intersectedObject.material.color.getHex() === 0x00ff00)
+                intersectedObject.material.color.set(0xFFFFFF); // Change color on click
+            else
+            {
+                intersectedObject.material.color.set(0x00ff00); // Change color on click
+            }
         }
+
     }
 }
 
