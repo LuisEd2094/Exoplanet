@@ -35,12 +35,12 @@ directionalLight.position.set(0, 1, 1).normalize();
 scene.add(directionalLight);
  */
 
- const loader = new GLTFLoader();
+const loader = new GLTFLoader();
 let panels;
 let leftpanel;
 let planet;
 let sun;
-loader.load('/assets/kepplersun.glb', function(gltf) {
+loader.load('/assets/kepplersun1.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
@@ -159,6 +159,57 @@ function handleControllerLine(controller,  line)
     return line;
 }
 
+
+const sounds = {};
+
+
+const listener = new THREE.AudioListener();
+camera.add( listener );
+
+// create a global audio source
+
+// load a sound and set it as the Audio object's buffer
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load( 'assets/hello.mp3', function( buffer ) {
+    const sound = new THREE.Audio(listener);
+	sound.setBuffer( buffer );
+	sound.setLoop( false );
+	sound.setVolume( 0.5 );
+    sounds.leftpanel = sound;
+});
+audioLoader.load( 'assets/good.mp3', function( buffer ) {
+    const sound = new THREE.Audio(listener);
+	sound.setBuffer( buffer );
+	sound.setLoop( false );
+	sound.setVolume( 0.5 );
+    sounds.good = sound;
+});
+audioLoader.load( 'assets/bad.mp3', function( buffer ) {
+    const sound = new THREE.Audio(listener);
+	sound.setBuffer( buffer );
+	sound.setLoop( false );
+	sound.setVolume( 0.5 );
+    sounds.bad = sound;
+});
+audioLoader.load( 'assets/another_bad.mp3', function( buffer ) {
+    const sound = new THREE.Audio(listener);
+	sound.setBuffer( buffer );
+	sound.setLoop( false );
+	sound.setVolume( 0.5 );
+    sounds.another_bad = sound;
+});
+
+audioLoader.load( 'assets/kepler.mp3', function( buffer ) {
+    const sound = new THREE.Audio(listener);
+	sound.setBuffer( buffer );
+	sound.setLoop( false );
+	sound.setVolume( 0.5 );
+    sounds.kepler = sound;
+});
+
+
+
+
 function render() {
     line1 = handleControllerLine(controller1, line1);
     line2 = handleControllerLine(controller2, line2);
@@ -186,7 +237,8 @@ function onSelectStart(event) {
         const intersectedObject = intersects[0].object; // Get the intersected object
         console.log(intersectedObject);
         if (intersectedObject.name === "Kepler_-_K2")
-        {   
+        {
+            sounds.kepler.play();
             leftpanel.visible = !leftpanel.visible;
             panels.visible = !panels.visible;
             panels.children.forEach(panel => {
@@ -202,15 +254,21 @@ function onSelectStart(event) {
         else if (intersectedObject.name === "toppanel")
         {
           planet.visible = true;
+          sounds.good.play();
         }
-        else
+        else if(intersectedObject.name === "leftpanel")
         {
-            if (intersectedObject.material.color.getHex() === 0x00ff00)
-                intersectedObject.material.color.set(0xFFFFFF); // Change color on click
-            else
-            {
-                intersectedObject.material.color.set(0x00ff00); // Change color on click
-            }
+            sounds.leftpanel.play()
+        }
+        else if (intersectedObject.name === "botpanel")
+        {
+            sounds.bad.play()
+
+        }
+        else if (intersectedObject.name === "midpanel")
+        {
+            sounds.another_bad.play()
+
         }
 
     }
