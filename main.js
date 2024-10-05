@@ -40,7 +40,7 @@ let panels;
 let leftpanel;
 let planet;
 let sun;
-loader.load('/assets/kepplersun1.glb', function(gltf) {
+loader.load('/assets/kepplerbig.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
