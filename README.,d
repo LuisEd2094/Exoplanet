@@ -10,3 +10,7 @@ http-server -S -C server.cert -K server.key -p 3000
 Cockpit URL:
 
 https://www.cgtrader.com/free-3d-models/vehicle/sci-fi-vehicle/spaceship-cockpit-for-vr
+
+Kepler 3d model:
+
+https://nasa3d.arc.nasa.gov/detail/jpl-vtad-kepler

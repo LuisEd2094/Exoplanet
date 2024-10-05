@@ -58,9 +58,9 @@ scene.add(directionalLight);
         }
     });
 }); */
-let box;
+let panels;
 
-loader.load('/assets/planetcube.glb', function(gltf) {
+loader.load('/assets/kepplerplanet.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
@@ -71,12 +71,17 @@ loader.load('/assets/planetcube.glb', function(gltf) {
 
     // Traverse through the model to find clickable parts
     gltf.scene.traverse((child) => {
-        console.log(child.name)
-        if (child.name === 'box')
-            box = child;        
+        console.log(child.name)     
         if (child.isMesh) {
-            if (child.name === 'ClickablePart1') {
-                child.userData.clickable = true;  // Mark this mesh as clickable
+            if (child.name === 'Rectangle_Bot') 
+            {
+                child.visible = false;
+                panels = child;  // Mark this mesh as clickable
+
+                // The `groups` array contains information about the face ranges for each material group
+                panels.children.forEach(panel => {
+                    panel.visible = false;              // Number of faces in the group
+                });
             }
             if (child.name === 'ClickablePart2') {
                 child.userData.clickable = true;  // Mark this mesh as clickable
@@ -186,16 +191,19 @@ function render() {
 
 // Event handlers for controller interaction
 function onSelectStart(event) {
+    console.log(event);
     const controller = event.target;
+    console.log(controller);
     const intersects = raycaster.intersectObjects(scene.children, true);
 
     if (intersects.length > 0) {
         const intersectedObject = intersects[0].object; // Get the intersected object
-        if (intersectedObject.name === "Cockpit")
+        if (intersectedObject.name === "Kepler_-_K2")
         {
-            box.visible = !box.visible;
-            console.log("Toggled box visibility:", box.visible);
-
+            panels.visible = !panels.visible;
+            panels.children.forEach(panel => {
+                panel.visible = !panel.visible;
+            })
         }
         console.log("Intersected with", intersectedObject.name); // Log the name of the intersected object
         if (intersectedObject.material.color.getHex() === 0x00ff00)
