@@ -63,8 +63,10 @@ function changeVisibility()
 
     return panels;
 }
-
-loader.load('/assets/kepplermid.glb', function(gltf) {
+//keplerbig
+//keplersmall
+//keplermid
+loader.load('/assets/keplerbig.glb', function(gltf) {
     const model = gltf.scene;   
     model.name = "cockpit";
     model.position.set(0, 0, 0);  // Position in the center
