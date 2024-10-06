@@ -28,9 +28,9 @@ renderer.xr.enabled = true;
 document.body.appendChild(renderer.domElement);
 document.body.appendChild(VRButton.createButton(renderer)); // Add VR Button to enter VR mode
 
-const ambientLight = new THREE.AmbientLight(0xFFF2F0, 0.5);
+const ambientLight = new THREE.AmbientLight(0xFFF2F0, 0.7);
 scene.add(ambientLight);
-/* const directionalLight = new THREE.DirectionalLight(0xffffff, 0.5);
+/* const directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
 directionalLight.position.set(0, 1, 1).normalize();
 scene.add(directionalLight);
  */
@@ -201,40 +201,43 @@ camera.add( listener );
 
 // load a sound and set it as the Audio object's buffer
 const audioLoader = new THREE.AudioLoader();
-audioLoader.load( 'assets/hello.mp3', function( buffer ) {
+
+audioLoader.load( 'assets/big_planet.wav', function( buffer ) {
     const sound = new THREE.Audio(listener);
 	sound.setBuffer( buffer );
 	sound.setLoop( false );
-	sound.setVolume( 0.5 );
-    sounds.leftpanel = sound;
+	sound.setVolume( 0.7 );
+    sounds.big = sound;
 });
-audioLoader.load( 'assets/good.mp3', function( buffer ) {
+audioLoader.load( 'assets/medium.wav', function( buffer ) {
     const sound = new THREE.Audio(listener);
 	sound.setBuffer( buffer );
 	sound.setLoop( false );
-	sound.setVolume( 0.5 );
-    sounds.good = sound;
+	sound.setVolume( 0.7 );
+    sounds.mid = sound;
 });
-audioLoader.load( 'assets/bad.mp3', function( buffer ) {
+audioLoader.load( 'assets/small_planet.wav', function( buffer ) {
     const sound = new THREE.Audio(listener);
 	sound.setBuffer( buffer );
 	sound.setLoop( false );
-	sound.setVolume( 0.5 );
-    sounds.bad = sound;
-});
-audioLoader.load( 'assets/another_bad.mp3', function( buffer ) {
-    const sound = new THREE.Audio(listener);
-	sound.setBuffer( buffer );
-	sound.setLoop( false );
-	sound.setVolume( 0.5 );
-    sounds.another_bad = sound;
+	sound.setVolume( 0.7 );
+    sounds.small = sound;
 });
 
-audioLoader.load( 'assets/kepler.mp3', function( buffer ) {
+audioLoader.load( 'assets/congrats.wav', function( buffer ) {
     const sound = new THREE.Audio(listener);
 	sound.setBuffer( buffer );
 	sound.setLoop( false );
-	sound.setVolume( 0.5 );
+	sound.setVolume( 0.7 );
+    sounds.congrats = sound;
+});
+
+
+audioLoader.load( 'assets/kepler_audio.wav', function( buffer ) {
+    const sound = new THREE.Audio(listener);
+	sound.setBuffer( buffer );
+	sound.setLoop( false );
+	sound.setVolume( 0.7 );
     sounds.kepler = sound;
 });
 
@@ -243,7 +246,7 @@ const background = new THREE.Audio(listener);
 audioLoader.load( 'assets/background.mp3', function( buffer ) {
 	background.setBuffer( buffer );
 	background.setLoop( true );
-	background.setVolume( 0.5 );
+	background.setVolume( 0.2 );
     sounds.background = background;
 });
 
@@ -262,6 +265,24 @@ function render() {
 
 }
 
+function getTextureName(object)
+{
+    return object.material.map.name;
+    const material = object.material;
+    const texture = material.map;       // Access the texture object
+    const imageSource = texture.name; // Get the file path of the texture
+
+}
+
+function playAudio(texture)
+{
+    if (texture.includes('big'))
+        sounds.big.play();
+    else if (texture.includes('small'))
+        sounds.small.play();
+    else if (texture.includes('med'))
+        sounds.mid.play();
+}
 
 // Event handlers for controller interaction
 function onSelectStart(event) {
@@ -270,7 +291,6 @@ function onSelectStart(event) {
     const intersects = raycaster.intersectObjects(scene.children, true);
     if (intersects.length > 0) {
         const intersectedObject = intersects[0].object; // Get the intersected object
-        console.log(intersectedObject);
         if (intersectedObject.name === "telescope")
         {
             sounds.kepler.play();
@@ -281,7 +301,6 @@ function onSelectStart(event) {
                 leftpanel.layers.set(notCollide);
 
             changeVisibility();
-            console.log(intersectedObject.material.color.getHex());
             if (intersectedObject.material.color.getHex() === 0xFFFFFF)
                 intersectedObject.material.color.set(0xE7E7E7); // Change color on click
             else
@@ -289,25 +308,28 @@ function onSelectStart(event) {
                 intersectedObject.material.color.set(0xFFFFFF); // Change color on click
             }
         }
-        else if (intersectedObject.name === "toppanel")
+        else if (intersectedObject.name === "toppanel") //Always the correct one 
         {
-          planet.visible = true;
-          sounds.good.play();
-          changeVisibility();
+            sounds.congrats.play();
+            planet.visible = true;
+            //sounds.good.play();
+            changeVisibility();
         }
         else if(intersectedObject.name === "leftpanel")
         {
-            sounds.leftpanel.play()
+            let name = getTextureName(intersectedObject)
+            playAudio(name);
         }
         else if (intersectedObject.name === "botpanel")
         {
-            sounds.bad.play()
+            let name = getTextureName(intersectedObject)
+            playAudio(name);
 
         }
         else if (intersectedObject.name === "midpanel")
         {
-            sounds.another_bad.play()
-
+            let name = getTextureName(intersectedObject)
+            playAudio(name);
         }
 
     }

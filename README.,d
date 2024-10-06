@@ -1,12 +1,4 @@
-Commands:
-
-Create cert
-openssl req -nodes -new -x509 -keyout server.key -out server.cert
-
-Run https server
-http-server -S -C server.cert -K server.key -p 3000 -c-1
-
-
+This apps runs as WebXR  experience, you'd need to have a server that can host HTTPS websites in the local  
 Cockpit URL:
 
 https://www.cgtrader.com/free-3d-models/vehicle/sci-fi-vehicle/spaceship-cockpit-for-vr
