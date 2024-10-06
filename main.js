@@ -238,6 +238,14 @@ audioLoader.load( 'assets/kepler.mp3', function( buffer ) {
     sounds.kepler = sound;
 });
 
+const background = new THREE.Audio(listener);
+
+audioLoader.load( 'assets/background.mp3', function( buffer ) {
+	background.setBuffer( buffer );
+	background.setLoop( true );
+	background.setVolume( 0.5 );
+    sounds.background = background;
+});
 
 
 
@@ -250,7 +258,6 @@ function render() {
     telescope.rotation.y += 0.0002;
 
     planet.rotation.y += 0.0008;
-    //planet.rotation.x += 0.00077;
     renderer.render(scene, camera);
 
 }
@@ -306,5 +313,11 @@ function onSelectStart(event) {
     }
 }
 
+
+renderer.xr.addEventListener('sessionstart', () => {
+    if (!background.isPlaying) {
+        background.play();  // Play sound once they enter VR mode
+    }
+});
 
 renderer.setAnimationLoop(render);
