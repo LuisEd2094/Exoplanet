@@ -161,5 +161,5 @@ https://drive.google.com/file/d/16cv5urkByHFgwvqxFyNR9PsIOqHtBf5H/view?usp=shari
 <br>
 <h2>Participation Certificate</h2>
 <div align="center">
-<a href="#"><img width="700" src="https://github.com/user-attachments/assets/aa764ce1-18b4-4631-b12b-8b637774817f" /></a>
+<a href="#"><img width="700" src="https://github.com/user-attachments/assets/8774129f-a87c-457a-8497-908979bbe0f1" /></a>
 </div>
